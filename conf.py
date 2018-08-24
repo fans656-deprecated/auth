@@ -4,8 +4,9 @@ import os
 debugging = os.path.exists('DEBUG')
 
 
-host = '0.0.0.0'
-port = 6561
+
+host = os.environ.get('HOST') or '0.0.0.0'
+port = int(os.environ.get('PORT', 6561))
 
 user_dir = os.path.expanduser('~')
 ssh_dir = os.path.join(user_dir, '.ssh')
