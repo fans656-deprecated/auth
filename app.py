@@ -31,7 +31,7 @@ def guarded(viewfunc):
     return wrapped
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/api/register', methods=['POST'])
 @guarded
 def register():
     username, password = get_username_and_password()
@@ -55,20 +55,16 @@ def register():
     return token_response(dbutil.get_user_for_token(username))
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 @guarded
 def login():
-    username, password = get_username_and_password()
-    validate_username(username)
-    validate_password(password)
+    return do_login(*get_username_and_password())
 
-    user = dbutil.get_user(username)
-    if not user:
-        raise Error('not found', 404)
 
-    if hash_password(password, user['salt']) != user['hashed_password']:
-        raise Error('wrong password')
-    return token_response(dbutil.get_user_for_token(username))
+@app.route('/get-login')
+@guarded
+def get_login():
+    return do_login(*get_username_and_password(request.args))
 
 
 @app.after_request
@@ -80,8 +76,21 @@ def after_request(r):
     return r
 
 
-def get_username_and_password():
-    data = request.json
+def do_login(username, password):
+    validate_username(username)
+    validate_password(password)
+    user = dbutil.get_user(username)
+    if not user:
+        raise Error('not found', 404)
+
+    if hash_password(password, user['salt']) != user['hashed_password']:
+        raise Error('wrong password')
+    return token_response(dbutil.get_user_for_token(username))
+
+
+def get_username_and_password(data=None):
+    if data is None:
+        data = request.json
     if not data:
         raise Error('username and password required')
     username = get_string_field('username', data)

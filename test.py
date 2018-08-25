@@ -12,6 +12,10 @@ def describe(message):
     print '-' * 20, message
 
 
+def get(path):
+    return requests.get(origin + path)
+
+
 def post(path, data):
     return requests.post(origin + path, json=data)
 
@@ -47,80 +51,85 @@ def user_from_token(token):
 dbutil.remove_user('foo')
 
 describe('register without username and password')
-r = post('/register', {})
+r = post('/api/register', {})
 assert_status_code(r, 400)
 
 describe('register without password')
-r = post('/register', {'username': ''})
+r = post('/api/register', {'username': ''})
 assert_status_code(r, 400)
 
 describe('register without username')
-r = post('/register', {'password': ''})
+r = post('/api/register', {'password': ''})
 assert_status_code(r, 400)
 
 describe('register with empty username')
-r = post('/register', {'username': '', 'password': ''})
+r = post('/api/register', {'username': '', 'password': ''})
 assert_status_code(r, 400)
 
 describe('register with too long username')
-r = post('/register', {'username': 'a' * 128, 'password': '?'})
+r = post('/api/register', {'username': 'a' * 128, 'password': '?'})
 assert_status_code(r, 400)
 
 describe('register with invalid username')
-r = post('/register', {'username': '?', 'password': ''})
+r = post('/api/register', {'username': '?', 'password': ''})
 assert_status_code(r, 400)
 
 describe('register with empty password')
-r = post('/register', {'username': 'foo', 'password': ''})
+r = post('/api/register', {'username': 'foo', 'password': ''})
 assert_status_code(r, 400)
 
 describe('register with too long password')
-r = post('/register', {'username': 'foo', 'password': 'a' * 128})
+r = post('/api/register', {'username': 'foo', 'password': 'a' * 128})
 assert_status_code(r, 400)
 
 describe('valid register')
-r = post('/register', {'username': 'foo', 'password': 'foo'})
+r = post('/api/register', {'username': 'foo', 'password': 'foo'})
 assert_status_code(r, 200)
 assert_user(r, 'foo')
 
 describe('register existing user')
-r = post('/register', {'username': 'foo', 'password': 'bar'})
+r = post('/api/register', {'username': 'foo', 'password': 'bar'})
 assert_status_code(r, 400)
 
 
 describe('login without username and password')
-r = post('/login', {})
+r = post('/api/login', {})
 assert_status_code(r, 400)
 
 describe('login without password')
-r = post('/login', {'username': ''})
+r = post('/api/login', {'username': ''})
 assert_status_code(r, 400)
 
 describe('login without username')
-r = post('/login', {'password': ''})
+r = post('/api/login', {'password': ''})
 assert_status_code(r, 400)
 
 describe('login with empty username')
-r = post('/login', {'username': '', 'password': ''})
+r = post('/api/login', {'username': '', 'password': ''})
 assert_status_code(r, 400)
 
 describe('login with too long username')
-r = post('/login', {'username': 'a' * 128, 'password': '?'})
+r = post('/api/login', {'username': 'a' * 128, 'password': '?'})
 assert_status_code(r, 400)
 
 describe('login with invalid username')
-r = post('/login', {'username': '?', 'password': ''})
+r = post('/api/login', {'username': '?', 'password': ''})
 assert_status_code(r, 400)
 
 describe('login with empty password')
-r = post('/login', {'username': 'foo', 'password': ''})
+r = post('/api/login', {'username': 'foo', 'password': ''})
 assert_status_code(r, 400)
 
 describe('login with too long password')
-r = post('/login', {'username': 'foo', 'password': 'a' * 128})
+r = post('/api/login', {'username': 'foo', 'password': 'a' * 128})
 assert_status_code(r, 400)
 
 describe('valid login')
-r = post('/login', {'username': 'foo', 'password': 'foo'})
+r = post('/api/login', {'username': 'foo', 'password': 'foo'})
+assert_status_code(r, 200)
+assert_user(r, 'foo')
+
+describe('valid get login')
+r = get('/get-login?username=foo&password=foo')
 assert_status_code(r, 200)
 assert_user(r, 'foo')
