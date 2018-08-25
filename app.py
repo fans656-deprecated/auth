@@ -75,6 +75,9 @@ def login():
 def after_request(r):
     if conf.debugging:
         r.headers['Cache-Control'] = 'no-cache'
+    r.headers['Access-Control-Allow-Origin'] = flask.request.headers.get(
+        'origin', '*')
+    r.headers['Access-Control-Allow-Headers'] = 'content-type'
     return r
 
 
@@ -118,6 +121,7 @@ def validate_password(password):
 def token_response(data):
     token = make_token(data)
     resp = flask.Response(token)
+    resp.headers['Content-Type'] = 'application/json'
     if 'no-cookie' not in flask.request.args:
         resp.set_cookie('token', token)
     return resp
