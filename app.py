@@ -34,31 +34,19 @@ def guarded(viewfunc):
 @app.route('/api/register', methods=['POST'])
 @guarded
 def register():
-    username, password = get_username_and_password()
-    validate_username(username)
-    validate_password(password)
-
-    if dbutil.get_user(username):
-        raise Error('user already exists')
-
-    salt = generate_salt()
-    hashed_password = hash_password(password, salt)
-    user = {
-        'username': username,
-        'ctime': utc_now_as_str(),
-        'salt': salt,
-        'hashed_password': hashed_password,
-    }
-    if not dbutil.create_user(user):
-        raise InternalError()
-
-    return token_response(dbutil.get_user_for_token(username))
+    return do_register(*get_username_and_password())
 
 
 @app.route('/api/login', methods=['POST'])
 @guarded
 def login():
     return do_login(*get_username_and_password())
+
+
+@app.route('/get-register')
+@guarded
+def get_register():
+    return do_register(*get_username_and_password(request.args))
 
 
 @app.route('/get-login')
@@ -85,6 +73,27 @@ def do_login(username, password):
 
     if hash_password(password, user['salt']) != user['hashed_password']:
         raise Error('wrong password')
+    return token_response(dbutil.get_user_for_token(username))
+
+
+def do_register(username, password):
+    validate_username(username)
+    validate_password(password)
+
+    if dbutil.get_user(username):
+        raise Error('user already exists')
+
+    salt = generate_salt()
+    hashed_password = hash_password(password, salt)
+    user = {
+        'username': username,
+        'ctime': utc_now_as_str(),
+        'salt': salt,
+        'hashed_password': hashed_password,
+    }
+    if not dbutil.create_user(user):
+        raise InternalError()
+
     return token_response(dbutil.get_user_for_token(username))
 
 

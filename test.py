@@ -87,6 +87,12 @@ r = post('/api/register', {'username': 'foo', 'password': 'foo'})
 assert_status_code(r, 200)
 assert_user(r, 'foo')
 
+dbutil.remove_user('foo')
+describe('valid get register')
+r = get('/get-register?username=foo&password=foo')
+assert_status_code(r, 200)
+assert_user(r, 'foo')
+
 describe('register existing user')
 r = post('/api/register', {'username': 'foo', 'password': 'bar'})
 assert_status_code(r, 400)
