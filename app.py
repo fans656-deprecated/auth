@@ -7,14 +7,14 @@ import traceback
 import functools
 
 import jwt
-import flask
+from flask import Flask, Response, request
 
 import conf
 import dbutil
 from errors import Error, InternalError
 
 
-app = flask.Flask(__name__)
+app = Flask(__name__)
 
 
 def guarded(viewfunc):
@@ -75,14 +75,13 @@ def login():
 def after_request(r):
     if conf.debugging:
         r.headers['Cache-Control'] = 'no-cache'
-    r.headers['Access-Control-Allow-Origin'] = flask.request.headers.get(
-        'origin', '*')
+    r.headers['Access-Control-Allow-Origin'] = request.headers.get('origin', '*')
     r.headers['Access-Control-Allow-Headers'] = 'content-type'
     return r
 
 
 def get_username_and_password():
-    data = flask.request.json
+    data = request.json
     if not data:
         raise Error('username and password required')
     username = get_string_field('username', data)
@@ -120,9 +119,9 @@ def validate_password(password):
 
 def token_response(data):
     token = make_token(data)
-    resp = flask.Response(token)
+    resp = Response(token)
     resp.headers['Content-Type'] = 'application/json'
-    if 'no-cookie' not in flask.request.args:
+    if 'no-cookie' not in request.args:
         resp.set_cookie('token', token)
     return resp
 
