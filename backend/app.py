@@ -7,14 +7,14 @@ import traceback
 import functools
 
 import jwt
-from flask import Flask, Response, request
+from flask import Flask, Response, request, send_from_directory
 
 import conf
 import dbutil
 from errors import Error, InternalError
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=conf.FRONTEND_DIR)
 
 
 def guarded(viewfunc):
@@ -53,6 +53,15 @@ def get_register():
 @guarded
 def get_login():
     return do_login(*get_username_and_password(request.args))
+
+
+@app.route('/')
+@app.route('/<path:path>')
+def index(path=''):
+    fpath = os.path.abspath(os.path.join(conf.FRONTEND_DIR, path))
+    if os.path.isfile(fpath):
+        return send_from_directory(conf.FRONTEND_DIR, path)
+    return app.send_static_file('index.html')
 
 
 @app.after_request
@@ -140,7 +149,8 @@ def token_response(data):
     resp = Response(token)
     resp.headers['Content-Type'] = 'application/json'
     if 'no-cookie' not in request.args:
-        resp.set_cookie('token', token)
+        date = datetime.datetime.now() + datetime.timedelta(days=90)
+        resp.set_cookie('token', token, expires=date)
     return resp
 
 
