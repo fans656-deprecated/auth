@@ -124,6 +124,7 @@ class App extends Component {
       password: password,
     });
     if (res.status === 200) {
+      Cookies.set('token', await res.text());
       message.success('Login succeed');
       this.setState({});
     } else {
@@ -144,6 +145,7 @@ class App extends Component {
       password: password,
     });
     if (res.status === 200) {
+      Cookies.set('token', await res.text());
       message.success('Register succeed');
       this.setState({});
     } else {
