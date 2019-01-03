@@ -112,7 +112,9 @@ class App extends Component {
   }
 
   doLogout = () => {
-    Cookies.remove('token');
+    Cookies.remove('token', {
+      domain: this.getDomain(),
+    });
     this.setState({});
   }
 
