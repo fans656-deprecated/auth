@@ -124,7 +124,9 @@ class App extends Component {
       password: password,
     });
     if (res.status === 200) {
-      Cookies.set('token', await res.text());
+      Cookies.set('token', await res.text(), {
+        domain: this.getDomain(),
+      });
       message.success('Login succeed');
       this.setState({});
     } else {
@@ -164,6 +166,15 @@ class App extends Component {
       }
     }
     return user;
+  }
+
+  getDomain = () => {
+    const hostname = window.location.hostname;
+    let parts = hostname.split('.');
+    if (parts.length > 2) {
+      parts = parts.splice(parts.length - 2);
+    }
+    return parts.join('.');
   }
 }
 
